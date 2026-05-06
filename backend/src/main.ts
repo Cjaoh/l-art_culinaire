@@ -17,7 +17,7 @@ async function bootstrap() {
   
   // Configuration CORS critique pour Angular
   app.enableCors({
-    origin: ['http://localhost:4200'], // Port par défaut d'Angular
+    origin: ['http://localhost:4200', 'http://localhost:4201'], // Ports Angular
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',

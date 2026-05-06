@@ -1,17 +1,23 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('accessToken');
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  constructor(private authService: AuthService) {}
 
-  // Si on a un token, on clone la requête pour ajouter le header
-  if (token) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    return next(cloned);
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    const token = this.authService.getAccessToken();
+    
+    // Ajouter le token pour les requêtes vers l'API
+    if (token && req.url.includes('/api/')) {
+      req = req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    }
+    
+    return next.handle(req);
   }
-
-  return next(req);
-};
+}

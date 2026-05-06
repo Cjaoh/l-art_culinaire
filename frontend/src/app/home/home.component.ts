@@ -28,7 +28,7 @@ import { Category } from '../shared/models/category.model';
     MatTooltipModule,
   ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss', './home-hero.scss']
 })
 export class HomeComponent implements OnInit {
   // =========================
@@ -52,11 +52,23 @@ export class HomeComponent implements OnInit {
     total: 0
   };
 
+  // Nouvelles propriétés pour la hero section
+  typingText = '';
+  fullText = "l'art culinaire";
+  typingIndex = 0;
+  animatedStats = {
+    published: 0,
+    categories: 0,
+    authors: 0,
+    views: 0
+  };
+
   // =========================
   // LIFECYCLE
   // =========================
   ngOnInit(): void {
     this.loadHomeData();
+    this.startTypingEffect();
   }
 
   // =========================
@@ -71,7 +83,8 @@ export class HomeComponent implements OnInit {
       categories: this.articlesService.getCategories(),
       featured: this.articlesService.getFeaturedArticles(),
       activity: this.articlesService.getLatestActivity(),
-      stats: this.articlesService.getModerationStats()
+      stats: this.articlesService.getModerationStats(),
+      apiStats: this.articlesService.getApiStats() // Nouvel appel à /api/stats
     }).pipe(
       finalize(() => {
         this.isLoading = false;
@@ -84,7 +97,17 @@ export class HomeComponent implements OnInit {
         this.featuredArticles = results.featured || [];
         this.recentActivity = results.activity || [];
         this.stats = results.stats?.data || this.stats;
+        
+        // Utiliser les stats de l'API si disponibles
+        if (results.apiStats?.data) {
+          this.stats.published = results.apiStats.data.published;
+          this.stats.total = results.apiStats.data.total;
+        }
+        
         console.log('Stats après mise à jour:', this.stats);
+        
+        // Lancer l'animation des stats après le chargement
+        setTimeout(() => this.animateStats(), 500);
       },
       error: (error) => {
         console.error('Error loading home data:', error);
@@ -196,5 +219,56 @@ export class HomeComponent implements OnInit {
 
   onRefresh(): void {
     this.loadHomeData();
+  }
+
+  // =========================
+  // TYPING EFFECT
+  // =========================
+  startTypingEffect(): void {
+    this.typingIndex = 0;
+    this.typingText = '';
+    this.typeNextCharacter();
+  }
+
+  typeNextCharacter(): void {
+    if (this.typingIndex < this.fullText.length) {
+      this.typingText += this.fullText[this.typingIndex];
+      this.typingIndex++;
+      setTimeout(() => this.typeNextCharacter(), 100);
+    }
+  }
+
+  // =========================
+  // ANIMATION STATS
+  // =========================
+  animateStats(): void {
+    const targetStats = {
+      published: this.stats.published,
+      categories: this.categories.length,
+      authors: Math.floor(this.stats.published * 0.3), // Estimation
+      views: this.articles.reduce((sum, article) => sum + (article.viewsCount || 0), 0)
+    };
+
+    Object.keys(targetStats).forEach(key => {
+      const target = targetStats[key as keyof typeof targetStats];
+      const start = 0;
+      const duration = 2000; // 2 secondes
+      const startTime = Date.now();
+
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = Math.floor(start + (target - start) * easeOutQuart);
+
+        this.animatedStats[key as keyof typeof this.animatedStats] = current;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    });
   }
 }

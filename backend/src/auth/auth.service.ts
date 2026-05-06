@@ -42,7 +42,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    const userObj = user.toObject();
+    const { password: _, ...userWithoutPassword } = userObj;
     return userWithoutPassword;
   }
 
@@ -94,10 +95,16 @@ export class AuthService {
       }
 
       const tokens = await this.generateTokens(user);
+      
+      // Sauvegarder le nouveau refresh token
+      await this.usersService.update((user as any)._id.toString(), { refreshToken: tokens.refreshToken });
 
+      const userObj = user.toObject();
+      const { password: _, ...userWithoutPassword } = userObj;
+      
       return {
         ...tokens,
-        user: user.toObject(),
+        user: userWithoutPassword,
       };
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');

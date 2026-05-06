@@ -68,15 +68,6 @@ export class Article {
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
 export type ArticleDocument = HydratedDocument<Article>;
-
-// Index pour optimiser les performances
-ArticleSchema.index({ slug: 1 }, { unique: true });
-ArticleSchema.index({ author: 1 });
-ArticleSchema.index({ status: 1 });
-ArticleSchema.index({ categories: 1 });
-ArticleSchema.index({ tags: 1 });
-ArticleSchema.index({ publishedAt: -1 });
-ArticleSchema.index({ viewsCount: -1 });
 ArticleSchema.index({ 'ingredients.name': 'text' });
 ArticleSchema.index({ cookingTimeMinutes: 1 });
 ArticleSchema.index({ preparationTimeMinutes: 1 });

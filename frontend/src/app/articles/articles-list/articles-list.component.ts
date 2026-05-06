@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ArticlesService } from '../../shared/services/articles.service';
 import { CategoriesService } from '../../shared/services/categories.service';
 import { AuthService } from '../../shared/services/auth.service';
@@ -36,6 +36,7 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   private categoriesService = inject(CategoriesService);
   private userService = inject(UserService);
   public authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   articles: Article[] = [];
   categories: Category[] = [];
@@ -43,10 +44,9 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   moderationStats: ModerationStats = { published: 0, pending: 0, rejected: 0, total: 0 };
   
   total = 0;
+  totalPages = 0;
   currentPage = 1;
   pageSize = 12;
-  totalPages = 0;
-  
   loading = false;
   error: string | null = null;
   
@@ -111,22 +111,27 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
 
     this.articlesService.getArticles(requestFilters).subscribe({
       next: (response: ArticlesResponse) => {
-        this.articles = response.articles;
-        this.total = response.total;
-        this.totalPages = Math.ceil(this.total / this.pageSize);
-        this.loading = false;
-        
-        // Mettre à jour les stats
-        this.updateStats();
+        // Utiliser setTimeout pour éviter NG0100
+        setTimeout(() => {
+          this.articles = response.articles;
+          this.total = response.total;
+          this.totalPages = Math.ceil(this.total / this.pageSize);
+          this.loading = false;
+          
+          // Mettre à jour les stats
+          this.updateStats();
+        });
       },
       error: (err) => {
         console.error('Error fetching articles:', err);
-        this.error = 'Erreur lors du chargement des articles. Veuillez réessayer.';
-        this.loading = false;
-        this.articles = this.getMockArticles();
-        this.total = this.articles.length;
-        this.totalPages = 1;
-        this.updateStats();
+        setTimeout(() => {
+          this.error = 'Erreur lors du chargement des articles. Veuillez réessayer.';
+          this.loading = false;
+          this.articles = this.getMockArticles();
+          this.total = this.articles.length;
+          this.totalPages = 1;
+          this.updateStats();
+        });
       }
     });
   }
@@ -146,11 +151,11 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   loadTopAuthors(): void {
     this.userService.getTopAuthors().subscribe({
       next: (authors) => {
-        this.topAuthors = authors.slice(0, 3);
+        this.topAuthors = authors && Array.isArray(authors) ? authors.slice(0, 3) : [];
       },
       error: (err) => {
         console.error('Error fetching top authors:', err);
-        this.topAuthors = this.getMockTopAuthors();
+        this.topAuthors = this.getMockTopAuthors().slice(0, 3);
       }
     });
   }
@@ -170,7 +175,11 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   }
 
   private updateStats(): void {
-    this.stats.published = this.articles.filter(a => a.status === 'published').length;
+    if (this.articles && Array.isArray(this.articles)) {
+      this.stats.published = this.articles.filter(a => a.status === 'published').length;
+    } else {
+      this.stats.published = 0;
+    }
   }
 
   // Gestion des filtres

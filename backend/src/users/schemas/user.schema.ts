@@ -2,16 +2,16 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  EDITOR = 'EDITOR', 
-  AUTHOR = 'AUTHOR',
-  USER = 'USER'
+  ADMIN = 'admin',
+  EDITOR = 'editor', 
+  AUTHOR = 'author',
+  USER = 'user'
 }
 
 export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  BANNED = 'BANNED'
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BANNED = 'banned'
 }
 
 @Schema({ timestamps: true })
@@ -46,8 +46,3 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 export type UserDocument = HydratedDocument<User>;
-
-// Index pour optimiser les recherches
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ role: 1 });
-UserSchema.index({ status: 1 });

@@ -136,7 +136,7 @@ export class CommentsService {
       status: CommentStatus.APPROVED,
       moderatedBy: new Types.ObjectId(moderatorId),
       moderatedAt: new Date(),
-    }, { new: true }).populate('author', 'name');
+    }, { returnDocument: 'after' }).populate('author', 'name');
   }
 
   async rejectComment(id: string, moderatorId: string, reason?: string) {
@@ -175,7 +175,7 @@ export class CommentsService {
       status: CommentStatus.SPAM,
       moderatedBy: new Types.ObjectId(moderatorId),
       moderatedAt: new Date(),
-    }, { new: true }).populate('author', 'name');
+    }, { returnDocument: 'after' }).populate('author', 'name');
   }
 
   async reportComment(id: string, userId: string) {
@@ -192,7 +192,7 @@ export class CommentsService {
     return this.commentModel.findByIdAndUpdate(id, {
       $inc: { reportsCount: 1 },
       $addToSet: { reportedBy: userObjectId }
-    }, { new: true }).populate('author', 'name');
+    }, { returnDocument: 'after' }).populate('author', 'name');
   }
 
   async incrementLikes(id: string) {
@@ -201,7 +201,7 @@ export class CommentsService {
 
     return this.commentModel.findByIdAndUpdate(id, {
       $inc: { likesCount: 1 },
-    }, { new: true });
+    }, { returnDocument: 'after' });
   }
 
   async decrementLikes(id: string) {
@@ -211,7 +211,7 @@ export class CommentsService {
     if (comment.likesCount && comment.likesCount > 0) {
       return this.commentModel.findByIdAndUpdate(id, {
         $inc: { likesCount: -1 },
-      }, { new: true });
+      }, { returnDocument: 'after' });
     }
 
     return comment;

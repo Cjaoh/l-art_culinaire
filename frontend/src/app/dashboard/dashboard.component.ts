@@ -44,7 +44,10 @@ export class DashboardComponent implements OnInit {
     totalArticles: 0,
     totalViews: 0,
     totalLikes: 0,
-    totalComments: 0
+    totalComments: 0,
+    published: 0,
+    draft: 0,
+    pending: 0
   };
   isLoading = true;
 
@@ -56,38 +59,59 @@ export class DashboardComponent implements OnInit {
   private loadDashboardData(): void {
     this.isLoading = true;
     
-    // Charger les articles récents
-    this.articlesService.getArticles({ page: 1, limit: 5 }).subscribe({
-      next: (data) => {
-        this.recentArticles = data.articles;
-        this.calculateStats();
-      },
-      error: (err) => console.error('Error loading articles:', err)
-    });
+    // Charger les articles de l'utilisateur connecté
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.articlesService.getArticles({ 
+        page: 1, 
+        limit: 5, 
+        author: currentUser._id 
+      }).subscribe({
+        next: (response) => {
+          // Gérer le cas où l'API retourne { data: { articles: [] } }
+          this.recentArticles = response?.articles || [];
+          this.calculateStats();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error loading user articles:', err);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.isLoading = false;
+    }
 
     // Charger les catégories populaires
     this.categoriesService.getCategories().subscribe({
-      next: (categories) => {
+      next: (response) => {
+        // Gérer le cas où l'API retourne { data: [] }
+        const categories = Array.isArray(response) ? response : (response as any)?.data || [];
         this.popularCategories = categories
-          .sort((a, b) => b.articlesCount - a.articlesCount)
+          .sort((a: any, b: any) => (b.articlesCount || 0) - (a.articlesCount || 0))
           .slice(0, 6);
       },
       error: (err) => console.error('Error loading categories:', err)
     });
 
-    // Simuler le chargement des statistiques
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 1000);
-  }
+    }
 
   private calculateStats(): void {
+    if (!this.recentArticles) {
+      this.recentArticles = [];
+    }
     this.stats.totalArticles = this.recentArticles.length;
-    this.stats.totalViews = this.recentArticles.reduce((sum, article) => sum + article.viewsCount, 0);
-    this.stats.totalLikes = this.recentArticles.reduce((sum, article) => sum + article.likesCount, 0);
-    this.stats.totalComments = this.recentArticles.reduce((sum, article) => sum + article.commentsCount, 0);
+    this.stats.totalViews = this.recentArticles.reduce((sum, article) => sum + (article.viewsCount || 0), 0);
+    this.stats.totalLikes = this.recentArticles.reduce((sum, article) => sum + (article.likesCount || 0), 0);
+    this.stats.totalComments = this.recentArticles.reduce((sum, article) => sum + (article.commentsCount || 0), 0);
+    
+    // Ajouter les stats par statut
+    this.stats.published = this.recentArticles.filter(a => a.status === 'published').length;
+    this.stats.draft = this.recentArticles.filter(a => a.status === 'draft').length;
+    this.stats.pending = this.recentArticles.filter(a => a.status === 'pending').length;
   }
 
+  
   createNewArticle(): void {
     this.router.navigate(['/articles/new']);
   }

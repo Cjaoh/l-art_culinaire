@@ -9,22 +9,31 @@ import { LoginDto, RegisterDto, AuthResponse, User } from '../models/user.model'
 })
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/auth`;
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Vérifier s'il y a un token stocké au démarrage
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      this.loadUserProfile();
-    }
+    // Réhydrater depuis localStorage au démarrage
+    this.rehydrateFromStorage();
   }
 
   login(credentials: LoginDto): Observable<AuthResponse> {
+    console.log('=== AUTH SERVICE LOGIN ===');
+    console.log('Login attempt for:', credentials.email);
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        this.storeTokens(response);
-        this.currentUserSubject.next(response.user);
+        console.log('Login response received:', response);
+        // Les tokens sont dans response.data
+        const data = (response as any).data || response;
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        console.log('Tokens stored in localStorage');
+        console.log('Access token:', localStorage.getItem('accessToken')?.substring(0, 20) + '...');
+        console.log('Refresh token:', localStorage.getItem('refreshToken')?.substring(0, 20) + '...');
+        this.currentUserSubject.next(data.user);
+        console.log('User set in subject:', data.user);
+        console.log('=== END AUTH SERVICE LOGIN ===');
       })
     );
   }
@@ -32,8 +41,11 @@ export class AuthService {
   register(userData: RegisterDto): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData).pipe(
       tap(response => {
-        this.storeTokens(response);
-        this.currentUserSubject.next(response.user);
+        const data = (response as any).data || response;
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        this.currentUserSubject.next(data.user);
       })
     );
   }
@@ -56,16 +68,23 @@ export class AuthService {
 
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken }).pipe(
       tap(response => {
-        this.storeTokens(response);
-        this.currentUserSubject.next(response.user);
+        const data = (response as any).data || response;
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        this.currentUserSubject.next(data.user);
       })
     );
   }
 
   getProfile(): Observable<User> {
+    console.log('=== AUTH SERVICE GET PROFILE ===');
+    console.log('Making request to:', `${this.apiUrl}/profile`);
+    console.log('Current token:', localStorage.getItem('accessToken')?.substring(0, 20) + '...');
     return this.http.get<User>(`${this.apiUrl}/profile`).pipe(
       tap(user => {
+        console.log('Profile received:', user);
         this.currentUserSubject.next(user);
+        console.log('=== END AUTH SERVICE GET PROFILE ===');
       })
     );
   }
@@ -74,8 +93,14 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
   get isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value && !!localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
+    const user = this.currentUserSubject.value;
+    return !!(token && user);
   }
 
   get isAdmin(): boolean {
@@ -90,7 +115,7 @@ export class AuthService {
 
   get isAuthor(): boolean {
     const user = this.currentUserSubject.value;
-    return !!user;
+    return user?.role === 'author' || user?.role === 'editor' || user?.role === 'admin';
   }
 
   get isModerator(): boolean {
@@ -103,24 +128,50 @@ export class AuthService {
     return user?.role === role;
   }
 
-  private storeTokens(response: AuthResponse): void {
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-  }
-
-  private clearTokens(): void {
+  clearTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+  }
+
+  private rehydrateFromStorage(): void {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const userStr = localStorage.getItem('currentUser');
+      
+      if (token && userStr) {
+        const user = JSON.parse(userStr);
+        this.currentUserSubject.next(user);
+      }
+    } catch (error) {
+      console.warn('Error rehydrating auth from storage:', error);
+      this.clearTokens();
+    }
   }
 
   private loadUserProfile(): void {
     this.getProfile().subscribe({
       next: (user) => {
         this.currentUserSubject.next(user);
+        localStorage.setItem('currentUser', JSON.stringify(user));
       },
-      error: () => {
-        this.clearTokens();
-        this.currentUserSubject.next(null);
+      error: (error) => {
+        // Si erreur 401, essayer de rafraîchir le token
+        if (error.status === 401) {
+          this.refreshToken().subscribe({
+            next: () => {
+              // Réessayer de charger le profil après le rafraîchissement
+              this.loadUserProfile();
+            },
+            error: () => {
+              this.clearTokens();
+              this.currentUserSubject.next(null);
+            }
+          });
+        } else {
+          this.clearTokens();
+          this.currentUserSubject.next(null);
+        }
       }
     });
   }

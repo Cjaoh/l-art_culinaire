@@ -36,6 +36,9 @@ export class Category {
   sortOrder: number = 0;
 
   @Prop()
+  icon?: string;
+
+  @Prop()
   metaTitle?: string;
 
   @Prop()
@@ -44,8 +47,3 @@ export class Category {
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
 export type CategoryDocument = HydratedDocument<Category>;
-
-// Index pour optimiser les recherches
-CategorySchema.index({ slug: 1 }, { unique: true });
-CategorySchema.index({ parent: 1 });
-CategorySchema.index({ status: 1 });

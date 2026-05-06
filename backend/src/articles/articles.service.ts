@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Article, ArticleStatus, ArticleDocument } from './schemas/article.schema';
+import { Category } from '../categories/schemas/category.schema';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -16,7 +17,10 @@ import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ArticlesService {
-  constructor(@InjectModel('Article') private articleModel: Model<ArticleDocument>) {}
+  constructor(
+    @InjectModel('Article') private articleModel: Model<ArticleDocument>,
+    @InjectModel('Category') private categoryModel: Model<Category>,
+  ) {}
 
   // ================= CREATE =================
 
@@ -52,7 +56,11 @@ export class ArticlesService {
     const query: any = { status };
     
     if (category) {
-      query.category = new Types.ObjectId(category);
+      // Récupérer la catégorie par slug
+      const categoryDoc = await this.categoryModel.findOne({ slug: category }).exec();
+      if (categoryDoc) {
+        query.categories = categoryDoc._id;
+      }
     }
     
     if (author) {
@@ -64,16 +72,23 @@ export class ArticlesService {
     const [data, total] = await Promise.all([
       this.articleModel.find(query)
         .populate('author', 'name')
+        .populate('categories', 'name slug icon')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(queryLimit),
       this.articleModel.countDocuments(query),
     ]);
 
+    console.log(`Articles found: ${total} with status ${status}`);
     return PaginationHelper.createPaginationResult(data, total, page, limit);
   }
 
   async findOne(id: string) {
+    // Vérifier si l'ID est un ObjectId valide
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id).populate('author');
     if (!article) throw new NotFoundException();
     return article;
@@ -169,12 +184,20 @@ export class ArticlesService {
   }
 
   async incrementViews(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     return this.articleModel.findByIdAndUpdate(id, {
       $inc: { viewsCount: 1 },
-    }, { new: true });
+    }, { returnDocument: 'after' });
   }
 
   async toggleLike(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
     
@@ -191,6 +214,10 @@ export class ArticlesService {
   }
 
   async submitForReview(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
     
@@ -200,19 +227,27 @@ export class ArticlesService {
     
     return this.articleModel.findByIdAndUpdate(id, {
       status: ArticleStatus.PENDING,
-    }, { new: true });
+    }, { returnDocument: 'after' });
   }
 
   async approveArticle(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
     
     return this.articleModel.findByIdAndUpdate(id, {
       status: ArticleStatus.PUBLISHED,
-    }, { new: true });
+    }, { returnDocument: 'after' });
   }
 
   async rejectArticle(id: string, reason?: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
     
@@ -241,6 +276,10 @@ export class ArticlesService {
   // ================= UPDATE =================
 
   async update(id: string, dto: UpdateArticleDto, userId: string, role: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
 
@@ -252,6 +291,10 @@ export class ArticlesService {
   // ================= DELETE =================
 
   async remove(id: string, userId: string, role: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('Invalid article ID format');
+    }
+    
     const article = await this.articleModel.findById(id);
     if (!article) throw new NotFoundException();
 

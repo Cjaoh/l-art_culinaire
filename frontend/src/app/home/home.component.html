@@ -28,39 +28,54 @@
 
   <!-- CONTENT -->
   <div class="home-content" *ngIf="!isLoading">
-    <!-- HERO SECTION -->
-    <section class="hero-section">
+    <!-- HERO SECTION CULINART -->
+    <section class="hero-section-culinart">
+      <div class="hero-background"></div>
       <div class="hero-content">
-        <div class="hero-badge">✦ CMS Culinaire Collaboratif</div>
+        <div class="hero-badge">🍽️ CulinArt - Blog Culinaire Collaboratif</div>
         <h1 class="hero-title">
-          Écrivez, partagez, élevez <span class="highlight">l'art culinaire</span>
+          Découvrez et partagez <span class="typing-text">{{ typingText }}</span><span class="cursor">|</span>
         </h1>
         <p class="hero-subtitle">
-          Rejoignez une communauté passionnée de chefs amateurs et professionnels pour partager vos meilleures créations culinaires
+          Rejoignez une communauté passionnée pour explorer, créer et partager l'excellence culinaire
         </p>
         <div class="hero-buttons">
-          <a routerLink="/register" class="btn btn-primary">Publier une recette</a>
-          <a routerLink="/articles" class="btn btn-secondary">Explorer le blog</a>
+          <a routerLink="/register" class="btn btn-hero-primary">Commencer maintenant</a>
+          <a routerLink="/articles" class="btn btn-hero-secondary">Explorer les recettes</a>
         </div>
       </div>
       
-      <!-- STATS BAR -->
-      <div class="stats-bar">
-        <div class="stat-item">
-          <div class="stat-number">{{ stats.published || 0 }}</div>
-          <div class="stat-label">Articles publiés</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ stats.pending || 0 }}</div>
-          <div class="stat-label">En attente</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ stats.total || 0 }}</div>
-          <div class="stat-label">Total</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ categories.length || 0 }}</div>
-          <div class="stat-label">Catégories</div>
+      <!-- STATS DYNAMIQUES -->
+      <div class="stats-container">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ animatedStats.published || 0 }}</div>
+              <div class="stat-label">Articles publiés</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📂</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ animatedStats.categories || 0 }}</div>
+              <div class="stat-label">Catégories</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👨‍🍳</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ animatedStats.authors || 0 }}</div>
+              <div class="stat-label">Auteurs actifs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ animatedStats.views || 0 }}</div>
+              <div class="stat-label">Vues totales</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

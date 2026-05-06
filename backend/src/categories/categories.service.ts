@@ -114,7 +114,7 @@ export class CategoriesService {
     }
 
     const updatedCategory = await this.categoryModel
-      .findByIdAndUpdate(id, updateData, { new: true })
+      .findByIdAndUpdate(id, updateData, { returnDocument: 'after' })
       .populate('parent', 'name slug')
       .populate('children', 'name slug status')
       .exec();

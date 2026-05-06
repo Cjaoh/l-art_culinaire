@@ -9,4 +9,9 @@ export class AppController {
   getApiInfo(): any {
     return this.appService.getApiInfo();
   }
+
+  @Get('stats')
+  async getStats() {
+    return this.appService.getStats();
+  }
 }

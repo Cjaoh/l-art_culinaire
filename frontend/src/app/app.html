@@ -1,42 +1,95 @@
-<!-- Navigation simple et fonctionnelle -->
-<header class="simple-header">
-  <div class="header-content">
+<!-- Header CulinArt - Design violet/or -->
+<header class="culinart-header">
+  <div class="header-container">
     <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-brand">
-          <a routerLink="/" class="brand-link">
-            <span class="brand-icon">🍳</span>
-            <span class="brand-text">Cuisine Collaborative</span>
-          </a>
+      <!-- Logo à gauche -->
+      <div class="nav-brand">
+        <a routerLink="/" class="brand-link">
+          <span class="brand-icon">🍽️</span>
+          <div class="brand-text-container">
+            <span class="brand-text">CulinArt</span>
+            <span class="brand-subtitle">Blog Culinaire Collaboratif</span>
+          </div>
+        </a>
+      </div>
+      
+      <!-- Navigation centre (desktop uniquement) -->
+      <ul class="nav-menu desktop-only">
+        <li class="nav-item">
+          <a routerLink="/" class="nav-link pill-btn">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/articles" class="nav-link pill-btn">Articles</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/categories" class="nav-link pill-btn">Catégories</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/authors" class="nav-link pill-btn">Top Auteurs</a>
+        </li>
+      </ul>
+      
+      <!-- Actions à droite -->
+      <div class="nav-actions">
+        <!-- Barre de recherche -->
+        <div class="search-container" [class.expanded]="searchExpanded">
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Rechercher des recettes..."
+            #searchInput
+            (keyup.enter)="onSearch(searchInput.value)"
+            (blur)="collapseSearch()"
+          >
+          <button class="search-toggle" (click)="toggleSearch()">
+            <span class="search-icon">🔍</span>
+          </button>
         </div>
         
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a routerLink="/" class="nav-link">🏠 Accueil</a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/articles" class="nav-link">📝 Articles</a>
-          </li>
-          <li class="nav-item" *ngIf="authService.isAuthor">
-            <a routerLink="/articles/new" class="nav-link">✍️ Écrire</a>
-          </li>
-          <li class="nav-item" *ngIf="authService.isAdmin">
-            <a routerLink="/admin" class="nav-link">⚙️ Admin</a>
-          </li>
-        </ul>
-        
-        <div class="nav-actions">
-          <div *ngIf="authService.isAuthenticated" class="user-menu">
-            <span class="user-name">👤 {{ authService.currentUser?.firstName }}</span>
-            <button (click)="logout()" class="logout-btn">🚪 Déconnexion</button>
+        <!-- Menu utilisateur -->
+        <div *ngIf="authService.isAuthenticated" class="user-menu">
+          <div class="user-avatar" (click)="toggleUserDropdown()">
+            <span class="avatar-text">{{ authService.currentUser?.firstName?.charAt(0) || 'U' }}</span>
           </div>
-          <div *ngIf="!authService.isAuthenticated" class="auth-buttons">
-            <a routerLink="/login" class="btn btn-outline">Connexion</a>
-            <a routerLink="/register" class="btn btn-primary">Inscription</a>
+          <div class="user-dropdown" [class.show]="userDropdownOpen">
+            <a routerLink="/profile" class="dropdown-item">Mon profil</a>
+            <a routerLink="/my-articles" class="dropdown-item">Mes articles</a>
+            <a routerLink="/dashboard" class="dropdown-item" *ngIf="authService.isAuthor">Tableau de bord</a>
+            <div class="dropdown-divider"></div>
+            <button (click)="logout()" class="dropdown-item logout-item">Déconnexion</button>
           </div>
         </div>
+        
+        <!-- Boutons connexion/inscription -->
+        <div *ngIf="!authService.isAuthenticated" class="auth-buttons">
+          <a routerLink="/login" class="btn btn-outline-white">Connexion</a>
+          <a routerLink="/register" class="btn btn-primary-gold">Inscription</a>
+        </div>
+        
+        <!-- Message de bienvenue -->
+        <div *ngIf="authService.isAuthenticated" class="welcome-message">
+          <span class="welcome-text">Bienvenue {{ authService.currentUser?.firstName }} !</span>
+          <a routerLink="/dashboard" class="dashboard-link">Tableau de bord</a>
+        </div>
+        
+        <!-- Menu hamburger (mobile) -->
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <span class="hamburger-icon">☰</span>
+        </button>
       </div>
     </nav>
+    
+    <!-- Menu mobile (drawer) -->
+    <div class="mobile-menu" [class.open]="mobileMenuOpen">
+      <div class="mobile-menu-content">
+        <ul class="mobile-nav-list">
+          <li><a routerLink="/" (click)="closeMobileMenu()">Accueil</a></li>
+          <li><a routerLink="/articles" (click)="closeMobileMenu()">Articles</a></li>
+          <li><a routerLink="/categories" (click)="closeMobileMenu()">Catégories</a></li>
+          <li><a routerLink="/authors" (click)="closeMobileMenu()">Top Auteurs</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </header>
 
