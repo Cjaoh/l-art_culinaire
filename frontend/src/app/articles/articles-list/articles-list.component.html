@@ -126,18 +126,7 @@
     <div class="content-layout">
       <!-- COLONNE PRINCIPALE -->
       <div class="main-column">
-        <!-- LOADING SKELETON -->
-        <div class="skeleton-grid" *ngIf="loading && articles.length === 0">
-          <div class="skeleton-card" *ngFor="let i of [1,2,3,4]">
-            <div class="skeleton-image"></div>
-            <div class="skeleton-content">
-              <div class="skeleton-line skeleton-title"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text short"></div>
-            </div>
-          </div>
-        </div>
-        
+        <!-- LOADING REMOVED PER USER REQUEST -->
         <!-- ERROR STATE -->
         <div class="error-state" *ngIf="error && !loading">
           <div class="error-icon">❌</div>
@@ -155,20 +144,20 @@
         </div>
         
         <!-- GRILLE D'ARTICLES -->
-        <div class="articles-grid" *ngIf="!loading && !error && articles.length > 0">
+        <div class="articles-grid" *ngIf="!error && articles.length > 0" [class.is-loading]="loading">
           <article 
             class="article-card" 
             *ngFor="let article of articles; trackBy: trackByArticleId"
             [routerLink]="['/articles', article._id]"
-            [class.pending-article]="article.status === 'pending'">
+            [class.pending-article]="article.status === 'PENDING'">
             
             <!-- IMAGE ET BADGES -->
             <div class="card-header">
-              <div class="card-image" [ngClass]="getCategoryColorClass(article.categories[0]?.name)">
+              <div class="card-image" [ngClass]="getCategoryColorClass(article.categories?.[0]?.name)">
                 {{ getArticleEmoji(article) }}
               </div>
               <div class="card-badges">
-                <div class="category-badge">{{ article.categories[0]?.name || 'Non classé' }}</div>
+                <div class="category-badge">{{ article.categories?.[0]?.name || 'Non classé' }}</div>
                 <div class="status-badge" [ngClass]="getStatusClass(article.status)">
                   {{ getStatusText(article.status) }}
                 </div>
@@ -181,7 +170,7 @@
               <div class="article-meta">
                 <div class="author-info">
                   <div class="author-avatar">{{ getAuthorInitials(article.author) }}</div>
-                  <span class="author-name">{{ article.author.firstName }} {{ article.author.lastName }}</span>
+                  <span class="author-name">{{ article.author?.firstName || '' }} {{ article.author?.lastName || '' }}</span>
                 </div>
                 <div class="article-stats">
                   <span class="duration">⏱️ {{ article.readTimeMinutes }}min</span>
@@ -193,7 +182,7 @@
         </div>
         
         <!-- PAGINATION -->
-        <div class="pagination" *ngIf="!loading && !error && totalPages > 1">
+        <div class="pagination" *ngIf="!error && totalPages > 1">
           <button 
             class="pagination-btn" 
             [disabled]="currentPage === 1"

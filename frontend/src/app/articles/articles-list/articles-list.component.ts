@@ -176,7 +176,7 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
 
   private updateStats(): void {
     if (this.articles && Array.isArray(this.articles)) {
-      this.stats.published = this.articles.filter(a => a.status === 'published').length;
+      this.stats.published = this.articles.filter(a => a.status === 'PUBLISHED').length;
     } else {
       this.stats.published = 0;
     }
@@ -267,12 +267,22 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   getArticleEmoji(article: Article): string {
     const categoryEmojis: { [key: string]: string } = {
       'entrées': '🥗',
+      'entr': '🥗',
       'plats': '🍖',
+      'plat': '🍖',
       'desserts': '🍰',
-      'cuisine du monde': '🌍'
+      'dessert': '🍰',
+      'cuisine': '🌍',
+      'monde': '🌍',
+      'boissons': '🥤',
+      'boisson': '🥤',
+      'végétarien': '🥦',
+      'vegeta': '🥦'
     };
     
-    const categoryName = article.categories[0]?.name.toLowerCase();
+    const categoryName = article.categories?.[0]?.name?.toLowerCase();
+    if (!categoryName) return '🍽️';
+    
     for (const [key, emoji] of Object.entries(categoryEmojis)) {
       if (categoryName.includes(key.toLowerCase())) {
         return emoji;
@@ -300,9 +310,13 @@ export class ArticlesListComponent implements OnInit, OnDestroy {
   getStatusText(status: string): string {
     const texts: { [key: string]: string } = {
       'published': 'Publié',
+      'PUBLISHED': 'Publié',
       'pending': 'En attente',
+      'PENDING': 'En attente',
       'rejected': 'Rejeté',
-      'draft': 'Brouillon'
+      'REJECTED': 'Rejeté',
+      'draft': 'Brouillon',
+      'DRAFT': 'Brouillon'
     };
     return texts[status] || 'Publié';
   }

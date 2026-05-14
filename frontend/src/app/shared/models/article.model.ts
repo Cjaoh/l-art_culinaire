@@ -1,9 +1,9 @@
 export enum ArticleStatus {
-  DRAFT = 'draft',
-  PENDING = 'pending',
-  PUBLISHED = 'published',
-  REJECTED = 'rejected',
-  ARCHIVED = 'archived'
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  REJECTED = 'REJECTED',
+  ARCHIVED = 'ARCHIVED'
 }
 
 export enum ArticleFeatureStatus {

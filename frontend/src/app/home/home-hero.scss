@@ -19,11 +19,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(26, 10, 62, 0.9) 0%, 
-    rgba(61, 21, 120, 0.8) 50%, 
-    rgba(107, 47, 160, 0.7) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(26, 10, 62, 0.9) 0%,
+      rgba(61, 21, 120, 0.8) 50%,
+      rgba(107, 47, 160, 0.7) 100%);
   z-index: 1;
 }
 
@@ -40,8 +39,15 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(1deg); }
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(1deg);
+  }
 }
 
 .hero-content {
@@ -58,6 +64,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -77,12 +84,18 @@
   text-transform: uppercase;
   margin-bottom: 1.5rem;
   backdrop-filter: blur(10px);
-  animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .hero-title {
@@ -110,8 +123,16 @@
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .hero-subtitle {
@@ -293,53 +314,53 @@
     min-height: 90vh;
     padding: 1rem 0;
   }
-  
+
   .hero-content {
     padding: 1rem;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1.1rem;
   }
-  
+
   .hero-buttons {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
   }
-  
+
   .btn-hero-primary,
   .btn-hero-secondary {
     width: 100%;
     max-width: 300px;
     text-align: center;
   }
-  
+
   .stats-container {
     margin-top: 3rem;
     padding: 0 1rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
     padding: 1.5rem;
   }
-  
+
   .stat-card {
     padding: 1rem;
   }
-  
+
   .stat-icon {
     width: 50px;
     height: 50px;
     font-size: 2rem;
   }
-  
+
   .stat-number {
     font-size: 1.5rem;
   }
@@ -349,20 +370,20 @@
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1rem;
   }
-  
+
   .stats-grid {
     padding: 1rem;
   }
-  
+
   .stat-card {
     padding: 0.75rem;
     gap: 0.75rem;
   }
-  
+
   .stat-icon {
     width: 40px;
     height: 40px;

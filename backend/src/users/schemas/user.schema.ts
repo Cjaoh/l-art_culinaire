@@ -42,6 +42,12 @@ export class User {
 
   @Prop()
   bio?: string;
+
+  @Prop()
+  refreshToken?: string;
+
+  @Prop()
+  lastLogin?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

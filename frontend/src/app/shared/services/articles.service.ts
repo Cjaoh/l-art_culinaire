@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, shareReplay } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Article, CreateArticleDto, UpdateArticleDto, ArticlesResponse, ModerationStats, ModerationStatsResponse, Activity } from '../models/article.model';
 import { Category } from '../models/category.model';
@@ -23,11 +24,24 @@ export class ArticlesService {
     Object.keys(filters).forEach(key => {
       if (filters[key]) params = params.set(key, filters[key]);
     });
-    return this.http.get<ArticlesResponse>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(response => {
+        if (response.data && response.meta) {
+          return {
+            articles: response.data,
+            total: response.meta.total,
+            pages: response.meta.pages
+          } as ArticlesResponse;
+        }
+        return response as ArticlesResponse;
+      })
+    );
   }
 
   getArticleById(id: string): Observable<Article> {
-    return this.http.get<Article>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   // Alias pour compatibilité
@@ -36,11 +50,15 @@ export class ArticlesService {
   }
 
   createArticle(data: CreateArticleDto): Observable<Article> {
-    return this.http.post<Article>(this.apiUrl, data);
+    return this.http.post<any>(this.apiUrl, data).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   updateArticle(id: string, data: UpdateArticleDto): Observable<Article> {
-    return this.http.patch<Article>(`${this.apiUrl}/${id}`, data);
+    return this.http.patch<any>(`${this.apiUrl}/${id}`, data).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   deleteArticle(id: string): Observable<void> {
@@ -60,15 +78,19 @@ export class ArticlesService {
   }
 
   getModerationStats(): Observable<ModerationStatsResponse> {
-    return this.http.get<ModerationStatsResponse>(`${this.apiUrl}/public/stats`);
+    return this.http.get<ModerationStatsResponse>(`${this.apiUrl}/stats`);
   }
 
   incrementViews(id: string): Observable<Article> {
-    return this.http.patch<Article>(`${this.apiUrl}/${id}/views`, {});
+    return this.http.patch<any>(`${this.apiUrl}/${id}/view`, {}).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   toggleLike(id: string): Observable<Article> {
-    return this.http.post<Article>(`${this.apiUrl}/${id}/like`, {});
+    return this.http.patch<any>(`${this.apiUrl}/${id}/like`, {}).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   // Alias pour compatibilité

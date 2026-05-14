@@ -106,9 +106,9 @@ export class DashboardComponent implements OnInit {
     this.stats.totalComments = this.recentArticles.reduce((sum, article) => sum + (article.commentsCount || 0), 0);
     
     // Ajouter les stats par statut
-    this.stats.published = this.recentArticles.filter(a => a.status === 'published').length;
-    this.stats.draft = this.recentArticles.filter(a => a.status === 'draft').length;
-    this.stats.pending = this.recentArticles.filter(a => a.status === 'pending').length;
+    this.stats.published = this.recentArticles.filter(a => a.status === 'PUBLISHED').length;
+    this.stats.draft = this.recentArticles.filter(a => a.status === 'DRAFT').length;
+    this.stats.pending = this.recentArticles.filter(a => a.status === 'PENDING').length;
   }
 
   

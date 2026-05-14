@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { 
   Comment, 
@@ -33,7 +34,9 @@ export class CommentsService {
       params = params.set('article', articleId);
     }
 
-    return this.http.get<CommentsResponse>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   getCommentsByArticle(
@@ -45,15 +48,21 @@ export class CommentsService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<CommentsResponse>(`${this.apiUrl}/article/${articleId}`, { params });
+    return this.http.get<any>(`${this.apiUrl}/article/${articleId}`, { params }).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   getCommentReplies(commentId: string): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.apiUrl}/replies/${commentId}`);
+    return this.http.get<any>(`${this.apiUrl}/replies/${commentId}`).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   getComment(id: string): Observable<Comment> {
-    return this.http.get<Comment>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   createComment(commentData: CreateCommentDto): Observable<Comment> {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ArticlesService } from '../../shared/services/articles.service';
 import { CommentsService } from '../../shared/services/comments.service';
@@ -14,6 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-article-detail',
@@ -33,7 +34,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.css']
 })
-export class ArticleDetailComponent implements OnInit {
+export class ArticleDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private articlesService = inject(ArticlesService);
@@ -44,16 +45,41 @@ export class ArticleDetailComponent implements OnInit {
   comments: Comment[] = [];
   newComment = '';
   isLoading = true;
+  private pollingSubscription?: Subscription;
 
   ngOnInit(): void {
     const articleId = this.route.snapshot.paramMap.get('id');
     if (articleId && articleId !== 'new') {
       this.loadArticle(articleId);
       this.loadComments(articleId);
+      
+      // Actualisation en temps réel toutes les 5 secondes
+      this.pollingSubscription = interval(5000).subscribe(() => {
+        this.refreshArticleStats(articleId);
+        this.loadComments(articleId);
+      });
     } else {
       this.isLoading = false;
       if (articleId === 'new') this.router.navigate(['/articles/new']);
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
+  }
+
+  refreshArticleStats(id: string): void {
+    this.articlesService.getArticle(id).subscribe({
+      next: (art: Article) => {
+        if (this.article) {
+          this.article.viewsCount = art.viewsCount;
+          this.article.likesCount = art.likesCount;
+          this.article.commentsCount = art.commentsCount;
+        }
+      }
+    });
   }
 
   loadArticle(id: string): void {
@@ -135,7 +161,7 @@ export class ArticleDetailComponent implements OnInit {
     if (author?.firstName && author?.lastName) {
       return `${author.firstName[0]}${author.lastName[0]}`.toUpperCase();
     }
-    return 'U';
+    return '??';
   }
 
   private extractContent(html: string, keyword: string, tag: string): string {

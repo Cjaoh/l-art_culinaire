@@ -40,7 +40,7 @@ export class HomeComponent implements OnInit {
   // =========================
   // STATE
   // =========================
-  isLoading: boolean = true;
+  isLoading: boolean = false;
   articles: Article[] = [];
   categories: Category[] = [];
   featuredArticles: Article[] = [];
@@ -75,8 +75,6 @@ export class HomeComponent implements OnInit {
   // DATA LOADING
   // =========================
   loadHomeData(): void {
-    this.isLoading = true;
-
     // Utilisation de forkJoin pour le chargement parallèle
     forkJoin({
       articles: this.articlesService.getArticles({ status: 'published', limit: 6 }),

@@ -35,6 +35,7 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(dto.password, 12);
 
     const user = new this.userModel({
+      name:         `${dto.firstName} ${dto.lastName}`.trim(),
       email:        dto.email,
       password:     hashedPassword,
       firstName:    dto.firstName,
@@ -42,7 +43,7 @@ export class UsersService {
       bio:          dto.bio ?? '',
       // ⚡ IMPORTANT : "author" par défaut pour permettre la création d'articles
       role:         UserRole.AUTHOR,
-      isActive:     true,
+      status:       UserStatus.ACTIVE,
       createdAt:    new Date()
     });
 

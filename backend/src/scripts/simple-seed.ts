@@ -237,8 +237,8 @@ class SimpleSeedService {
 6. Laissez mijoter pendant 30 minutes
 
 Ce plat se déguste chaud ou froid, accompagné de pain frais.`,
-          author: userResult.insertedIds[1].toString(), // Chef Marie
-          categories: [categoryResult.insertedIds[1].toString(), categoryResult.insertedIds[4].toString()], // Plats principaux, Végétarien
+          author: userResult.insertedIds[1], // Chef Marie
+          categories: [categoryResult.insertedIds[1], categoryResult.insertedIds[4]], // Plats principaux, Végétarien
           tags: ['légumes', 'méditerranéen', 'traditionnel', 'été'],
           status: 'PUBLISHED',
           featureStatus: 'FEATURED',
@@ -278,8 +278,8 @@ Ce plat se déguste chaud ou froid, accompagné de pain frais.`,
 7. Saupoudrez de cacao avant de servir
 
 Laissez reposer au moins 4 heures au réfrigérateur.`,
-          author: userResult.insertedIds[2].toString(), // Paul
-          categories: [categoryResult.insertedIds[2].toString()], // Desserts
+          author: userResult.insertedIds[2], // Paul
+          categories: [categoryResult.insertedIds[2]], // Desserts
           tags: ['dessert', 'italien', 'café', 'crémeux'],
           status: 'PUBLISHED',
           featureStatus: 'TRENDING',
@@ -314,8 +314,8 @@ Laissez reposer au moins 4 heures au réfrigérateur.`,
 4. Ajoutez les graines de chia et laissez reposer 5 minutes
 
 Buvez immédiatement pour profiter de tous les bienfaits!`,
-          author: userResult.insertedIds[3].toString(), // Sophie
-          categories: [categoryResult.insertedIds[3].toString(), categoryResult.insertedIds[4].toString()], // Boissons, Végétarien
+          author: userResult.insertedIds[3], // Sophie
+          categories: [categoryResult.insertedIds[3], categoryResult.insertedIds[4]], // Boissons, Végétarien
           tags: ['smoothie', 'détox', 'santé', 'vitamines'],
           status: 'PUBLISHED',
           featureStatus: 'NONE',

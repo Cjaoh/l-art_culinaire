@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginDto, RegisterDto, AuthResponse, User } from '../models/user.model';
 
@@ -55,6 +55,11 @@ export class AuthService {
       tap(() => {
         this.clearTokens();
         this.currentUserSubject.next(null);
+      }),
+      catchError((error) => {
+        this.clearTokens();
+        this.currentUserSubject.next(null);
+        return of(null);
       })
     );
   }

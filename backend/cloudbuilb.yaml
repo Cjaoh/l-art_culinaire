@@ -1,0 +1,45 @@
+steps:
+  # Build l'image Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/cms-blog-backend:$BUILD_ID'
+      - '.'
+
+  # Push vers Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/cms-blog-backend:$BUILD_ID'
+
+  # Deploy sur Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cms-blog-backend'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/cms-blog-backend:$BUILD_ID'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '512Mi'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,PORT=8080,MONGODB_URI=${_MONGODB_URI},JWT_SECRET=${_JWT_SECRET},JWT_REFRESH_SECRET=${_JWT_REFRESH_SECRET},JWT_EXPIRATION=15m,JWT_REFRESH_EXPIRATION=7d'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/cms-blog-backend:$BUILD_ID'
+
+substitutions:
+  _REGION: europe-west1
+  _REPO: cms-blog-repo
+  _MONGODB_URI: 'your-mongodb-uri'
+  _JWT_SECRET: 'your-jwt-secret'
+  _JWT_REFRESH_SECRET: 'your-jwt-refresh-secret'

@@ -20,9 +20,12 @@ export class ArticlesController {
     @Query('page',   new DefaultValuePipe(1),  ParseIntPipe) page:   number,
     @Query('limit',  new DefaultValuePipe(10), ParseIntPipe) limit:  number,
     @Query('category') category?: string,
-    @Query('author')   author?:   string
+    @Query('author')   author?:   string,
+    @Query('status')   status?:   string,
+    @Query('sortBy')   sortBy?:   string,
+    @Query('search')   search?:   string
   ) {
-    return this.articlesService.findAll(page, limit, undefined, category, author);
+    return this.articlesService.findAll(page, limit, undefined, category, author, sortBy, search);
   }
 
   /* ── Recherche ── */

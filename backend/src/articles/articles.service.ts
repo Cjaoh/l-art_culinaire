@@ -52,7 +52,7 @@ export class ArticlesService {
 
   // ================= READ =================
 
-  async findAll(page = 1, limit = 10, status = ArticleStatus.PUBLISHED, category?: string, author?: string) {
+  async findAll(page = 1, limit = 10, status = ArticleStatus.PUBLISHED, category?: string, author?: string, sortBy?: string, search?: string) {
     const query: any = { status };
     
     if (category) {
@@ -67,19 +67,44 @@ export class ArticlesService {
       query.author = new Types.ObjectId(author);
     }
 
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      query.$or = [{ title: regex }, { content: regex }, { tags: regex }];
+    }
+
+    // Build sort based on sortBy parameter
+    let sort: any = { createdAt: -1 }; // default: recent
+    switch (sortBy) {
+      case 'popular':
+        sort = { viewsCount: -1 };
+        break;
+      case 'rated':
+        sort = { likesCount: -1 };
+        break;
+      case 'moderation':
+        // Show pending first
+        query.status = ArticleStatus.PENDING;
+        sort = { createdAt: -1 };
+        break;
+      case 'recent':
+      default:
+        sort = { createdAt: -1 };
+        break;
+    }
+
     const { skip, limit: queryLimit } = PaginationHelper.createQuery(page, limit);
 
     const [data, total] = await Promise.all([
       this.articleModel.find(query)
-        .populate('author', 'name')
+        .populate('author', 'name firstName lastName avatar')
         .populate('categories', 'name slug icon')
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip(skip)
         .limit(queryLimit),
       this.articleModel.countDocuments(query),
     ]);
 
-    console.log(`Articles found: ${total} with status ${status}`);
+    console.log(`Articles found: ${total} with status ${status}, sortBy ${sortBy}`);
     return PaginationHelper.createPaginationResult(data, total, page, limit);
   }
 
@@ -89,13 +114,17 @@ export class ArticlesService {
       throw new NotFoundException('Invalid article ID format');
     }
     
-    const article = await this.articleModel.findById(id).populate('author');
+    const article = await this.articleModel.findById(id)
+      .populate('author', 'name firstName lastName avatar')
+      .populate('categories', 'name slug icon');
     if (!article) throw new NotFoundException();
     return article;
   }
 
   async findBySlug(slug: string) {
-    const article = await this.articleModel.findOne({ slug }).populate('author');
+    const article = await this.articleModel.findOne({ slug })
+      .populate('author', 'name firstName lastName avatar')
+      .populate('categories', 'name slug icon');
     if (!article) throw new NotFoundException();
     return article;
   }
@@ -151,14 +180,14 @@ export class ArticlesService {
 
   async getFeaturedArticles() {
     return this.articleModel.find({ status: ArticleStatus.PUBLISHED })
-      .populate('author', 'name')
+      .populate('author', 'name firstName lastName avatar')
       .sort({ viewsCount: -1 })
       .limit(5);
   }
 
   async getRecentActivity() {
     return this.articleModel.find()
-      .populate('author', 'name')
+      .populate('author', 'name firstName lastName avatar')
       .sort({ updatedAt: -1 })
       .limit(10);
   }

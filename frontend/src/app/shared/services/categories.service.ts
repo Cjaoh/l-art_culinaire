@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { 
   Category, 
@@ -19,7 +20,9 @@ export class CategoriesService {
 
   getCategories(status = CategoryStatus.ACTIVE): Observable<Category[]> {
     const params = { status };
-    return this.http.get<Category[]>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(res => res.data ? res.data : res)
+    );
   }
 
   getCategoryTree(): Observable<Category[]> {
